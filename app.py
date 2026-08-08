@@ -69,8 +69,16 @@ def webhook():
 # Endpoint để kiểm tra server có đang sống không
 @app.route('/', methods=['GET'])
 def home():
-    return "Zalo AI Bot đang hoạt động tốt!"
-
+    return """
+    
+        
+            
+        
+        
+            Zalo AI Bot đang hoạt động tốt!
+        
+    
+    """
 if __name__ == '__main__':
     # Render sẽ tự động gán biến môi trường PORT
     port = int(os.environ.get("PORT", 10000))
