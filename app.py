@@ -80,3 +80,10 @@ def home():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+    @app.route('/check', methods=['GET'])
+def check_models():
+    try:
+        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        return jsonify({"available_models": models})
+    except Exception as e:
+        return str(e)
