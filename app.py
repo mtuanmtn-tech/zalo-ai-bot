@@ -32,6 +32,7 @@ def send_zalo_message(user_id, text_content):
     }
     
     response = requests.post(url, json=payload, headers=headers)
+    print("Kết quả gửi Zalo:", response.json()) # Dòng lệnh bắt lỗi Zalo
     return response.json()
 
 # --- BƯỚC 4: NHẬN WEBHOOK TỪ ZALO ---
