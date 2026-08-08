@@ -6,13 +6,12 @@ import google.generativeai as genai
 app = Flask(__name__)
 
 # --- BƯỚC 1: LẤY CÁC KEY TỪ BIẾN MÔI TRƯỜNG ---
-# Không nên ghi trực tiếp Key vào code để bảo mật, ta sẽ cài đặt trên Render
+# Render sẽ tự động truyền các biến này vào khi chạy
 ZALO_ACCESS_TOKEN = os.environ.get("ZALO_ACCESS_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # --- BƯỚC 2: CẤU HÌNH GOOGLE GEMINI AI ---
 genai.configure(api_key=GEMINI_API_KEY)
-# Sử dụng model gemini-1.5-flash (nhanh, thông minh và được miễn phí)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- BƯỚC 3: HÀM GỬI TIN NHẮN LẠI ZALO ---
@@ -25,7 +24,6 @@ def send_zalo_message(user_id, text_content):
         "access_token": ZALO_ACCESS_TOKEN
     }
     
-    # Payload cơ bản để trả lời người dùng
     payload = {
         "recipient": {
             "user_id": user_id
@@ -42,9 +40,9 @@ def send_zalo_message(user_id, text_content):
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.json
-    print("Nhận dữ liệu từ Zalo:", data) # In ra log trên Render để dễ theo dõi
+    print("Nhận dữ liệu từ Zalo:", data)
     
-    # Kiểm tra xem có phải sự kiện người dùng gửi tin nhắn (text) không
+    # Kiểm tra xem có phải sự kiện người dùng gửi tin nhắn text không
     if data and data.get("event_name") == "user_send_text":
         user_msg = data.get("message", {}).get("text", "")
         user_id = data.get("sender", {}).get("id")
@@ -52,7 +50,6 @@ def webhook():
         if user_msg and user_id:
             try:
                 # Gọi Gemini để lấy câu trả lời
-                # Bạn có thể nối thêm "Hãy đóng vai một trợ lý y tế..." vào trước user_msg để bot trả lời chuyên nghiệp hơn
                 ai_response = model.generate_content(user_msg)
                 reply_text = ai_response.text
                 
@@ -63,23 +60,24 @@ def webhook():
                 print("Lỗi khi xử lý AI:", e)
                 send_zalo_message(user_id, "Xin lỗi bác sĩ, hệ thống AI đang bận một chút. Vui lòng thử lại sau ạ.")
                 
-    # Zalo yêu cầu máy chủ trả về mã 200 để xác nhận đã nhận được webhook
+    # Bắt buộc trả về HTTP 200 để Zalo biết webhook đã nhận thành công
     return jsonify({"status": "success"}), 200
 
-# Endpoint để kiểm tra server có đang sống không
+# --- BƯỚC 5: TRANG CHỦ & XÁC THỰC DOMAIN ZALO ---
 @app.route('/', methods=['GET'])
 def home():
+    # Đoạn HTML chứa mã xác thực của Zalo
     return """
-    
-        
-            
-        
-        
-            Zalo AI Bot đang hoạt động tốt!
-        
-    
+    <html>
+        <head>
+            <meta name="zalo-platform-site-verification" content="Ck6WCzRIBWHSu8yhcEm_2cp6kZM0i61kDJKr" />
+        </head>
+        <body>
+            <h1>Zalo AI Bot đang hoạt động tốt!</h1>
+        </body>
+    </html>
     """
+
 if __name__ == '__main__':
-    # Render sẽ tự động gán biến môi trường PORT
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
