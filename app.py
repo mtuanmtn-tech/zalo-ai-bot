@@ -12,8 +12,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # --- BƯỚC 2: CẤU HÌNH GOOGLE GEMINI AI ---
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
-
+model = genai.GenerativeModel('gemini-1.5-flash')
 # --- BƯỚC 3: HÀM GỬI TIN NHẮN LẠI ZALO ---
 def send_zalo_message(user_id, text_content):
     """Gọi API của Zalo để gửi tin nhắn phản hồi"""
